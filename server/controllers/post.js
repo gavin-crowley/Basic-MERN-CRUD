@@ -5,7 +5,7 @@ exports.create = (req, res) => {
     // console.log(req.body);
     const { title, content, user } = req.body;
     const slug = slugify(title);
-    // // validate
+    // validate
     switch (true) {
         case !title:
             return res.status(400).json({ error: 'Title is required' });
@@ -42,3 +42,25 @@ exports.read = (req, res) => {
         res.json(post);
     });
 };
+
+exports.update = (req, res) => {
+    const { slug } = req.params;
+    const { title, content, user } = req.body;
+    Post.findOneAndUpdate({ slug }, { title, content, user }, { new: true }).exec((err, post) => {
+        if (err) console.log(err);
+        res.json(post);
+    });
+};
+
+exports.remove = (req, res) => {
+    // console.log(req.pramas.slug)
+    const { slug } = req.params;
+    Post.findOneAndRemove({ slug }).exec((err, post) => {
+        if (err) console.log(err);
+        res.json({
+            message: 'Post deleted'
+        });
+    });
+};
+
+
