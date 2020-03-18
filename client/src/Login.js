@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Nav from './Nav';
+import { authenticate, getUser } from './helpers';
 
-const Login = () => {
+const Login = props => {
     // create a state
     const [state, setState] = useState({
         name: '',
         password: ''
     });
     const { name, password } = state; // destructure values from state
+
+    useEffect(() => {
+        getUser() && props.history.push('/');
+    }, []);
 
     // onchange event handler
     const handleChange = name => event => {
@@ -19,16 +24,14 @@ const Login = () => {
 
     const handleSubmit = event => {
         event.preventDefault();
-        // console.table({ name, password });
+        console.table({ name, password });
         axios
             .post(`${process.env.REACT_APP_API}/login`, { name, password })
-            // .post(`${process.env.REACT_APP_API}/post`, { title, content, user })
             .then(response => {
                 console.log(response);
-                // empty state
-                // setState({ ...state, title: '', content: '', user: '' });
-                // // show sucess alert
-                // alert(`Post titled ${response.data.title} is created`);
+                // response will contain token and name
+                authenticate(response, () => props.history.push('/create'));
+                // redirect to create page
             })
             .catch(error => {
                 console.log(error.response);
@@ -66,11 +69,11 @@ const Login = () => {
                     />
                 </div>
                 <div>
-                    <button className="btn btn-primary">Create</button>
+                    <button className="btn btn-primary">Login</button>
                 </div>
             </form>
         </div>
     );
 };
 
-export default Login;
+export default withRouter(Login);
