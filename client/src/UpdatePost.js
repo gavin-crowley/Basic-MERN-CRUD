@@ -1,22 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Nav from './Nav';
+import ReactQuill from 'react-quill';
+import { getToken } from './helpers';
+import 'react-quill/dist/quill.bubble.css';
 
 const UpdatePost = props => {
     const [state, setState] = useState({
         title: '',
-        content: '',
         slug: '',
         user: ''
     });
-    const { title, content, slug, user } = state;
+    const { title, slug, user } = state;
+
+    const [content, setContent] = useState('');
+
+    // rich text editor handle change
+    const handleContent = event => {
+        console.log(event);
+        setContent(event);
+    };
 
     useEffect(() => {
         axios
             .get(`${process.env.REACT_APP_API}/post/${props.match.params.slug}`)
             .then(response => {
                 const { title, content, slug, user } = response.data;
-                setState({ ...state, title, content, slug, user });
+                setState({ ...state, title, slug, user });
+                setContent(content);
             })
             .catch(error => alert('Error loading single post'));
     }, []);
@@ -31,7 +42,15 @@ const UpdatePost = props => {
         event.preventDefault();
         // console.table({ title, content, user });
         axios
-            .put(`${process.env.REACT_APP_API}/post/${slug}`, { title, content, user })
+            .put(
+                `${process.env.REACT_APP_API}/post/${slug}`,
+                { title, content, user },
+                {
+                    headers: {
+                        authorization: `Bearer ${getToken()}`
+                    }
+                }
+            )
             .then(response => {
                 console.log(response);
                 const { title, content, slug, user } = response.data;
@@ -61,13 +80,13 @@ const UpdatePost = props => {
             </div>
             <div className="form-group">
                 <label className="text-muted">Content</label>
-                <textarea
-                    onChange={handleChange('content')}
+                <ReactQuill
+                    onChange={handleContent}
                     value={content}
-                    type="text"
-                    className="form-control"
+                    theme="bubble"
+                    className="pb-5 mb-3"
                     placeholder="Write something.."
-                    required
+                    style={{ border: '1px solid #666' }}
                 />
             </div>
             <div className="form-group">
